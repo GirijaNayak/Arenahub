@@ -1,0 +1,1 @@
+-- Demo data is created by backend/src/utils/seed.js using bcrypt at startup.

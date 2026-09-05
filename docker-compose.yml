@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: arenahub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: arenahub
+      POSTGRES_USER: arenahub
+      POSTGRES_PASSWORD: arenahub
+    ports:
+      - "5432:5432"
+    volumes:
+      - arenahub_pgdata:/var/lib/postgresql/data
+      - ./backend/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/sql/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+volumes:
+  arenahub_pgdata:

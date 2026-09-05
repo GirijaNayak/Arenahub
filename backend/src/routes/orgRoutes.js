@@ -1,0 +1,2 @@
+import {Router} from 'express';import {listOrgs,createOrg,addMember,members} from '../controllers/orgController.js';import {authenticate,requireAdmin,requireRoles} from '../middleware/auth.js';
+const r=Router();r.get('/',authenticate,listOrgs);r.post('/',authenticate,requireAdmin,createOrg);r.get('/:id/members',authenticate,requireRoles('TOURNAMENT_ORGANIZER','PLATFORM_ADMIN'),members);r.post('/:id/members',authenticate,requireRoles('TOURNAMENT_ORGANIZER','PLATFORM_ADMIN'),addMember);export default r;

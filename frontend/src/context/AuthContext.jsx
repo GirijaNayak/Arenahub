@@ -1,0 +1,8 @@
+import {createContext,useContext,useEffect,useMemo,useState} from 'react';import api from '../services/api';
+const C=createContext(null);
+export function AuthProvider({children}){const [user,setUser]=useState(null),[memberships,setMemberships]=useState([]),[loading,setLoading]=useState(true),[orgId,setOrgId]=useState(localStorage.getItem('arenahub_org')||'');
+ useEffect(()=>{if(localStorage.getItem('arenahub_token'))api.get('/auth/me').then(r=>{setUser(r.data.user);setMemberships(r.data.memberships);if(!orgId&&r.data.memberships[0]){setOrgId(r.data.memberships[0].org_id);localStorage.setItem('arenahub_org',r.data.memberships[0].org_id)}}).catch(()=>logout()).finally(()=>setLoading(false));else setLoading(false)},[]);
+ const login=async(d)=>{const r=await api.post('/auth/login',d);localStorage.setItem('arenahub_token',r.data.token);setUser(r.data.user);setMemberships(r.data.memberships);const id=r.data.memberships[0]?.org_id||'';setOrgId(id);if(id)localStorage.setItem('arenahub_org',id);return r.data};
+ const register=async d=>{const r=await api.post('/auth/register',d);return r.data};const logout=()=>{localStorage.removeItem('arenahub_token');localStorage.removeItem('arenahub_org');setUser(null);setMemberships([]);setOrgId('')};
+ const currentMembership=memberships.find(m=>m.org_id===orgId)||memberships[0];const value=useMemo(()=>({user,memberships,currentMembership,orgId,setOrgId:(id)=>{localStorage.setItem('arenahub_org',id);setOrgId(id)},login,register,logout,loading}),[user,memberships,orgId,currentMembership,loading]);return <C.Provider value={value}>{children}</C.Provider>}
+export const useAuth=()=>useContext(C);

@@ -1,0 +1,2 @@
+import {Router} from 'express';import {list,get,create,update,status,register,addPlayer,removePlayer,generate} from '../controllers/tournamentController.js';import {authenticate} from '../middleware/auth.js';
+const r=Router();r.get('/org/:orgId',authenticate,list);r.post('/org/:orgId',authenticate,create);r.get('/:id',authenticate,get);r.patch('/:id',authenticate,update);r.post('/:id/:action',authenticate,status);r.post('/:id/teams',authenticate,register);r.post('/:id/bracket/generate',authenticate,generate);export default r;

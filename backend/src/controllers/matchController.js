@@ -1,0 +1,9 @@
+import {matches} from '../repositories/matchRepository.js';import {submitResult,confirmResult,raiseDispute,resolveDispute,startMatch} from '../services/matchService.js';import {disputes} from '../repositories/disputeRepository.js';import {query} from '../config/db.js';
+async function access(id,userId){const m=await matches.get(id);if(!m)throw Object.assign(new Error('Match not found'),{status:404});const x=await query('SELECT role FROM org_memberships WHERE user_id=$1 AND org_id=$2',[userId,m.org_id]);if(!x.rowCount)throw Object.assign(new Error('You do not have access to this host'),{status:403});return {m,role:x.rows[0].role};}
+export const list=async(req,res)=>{const m=await matches.get(req.params.id);if(!m)return res.status(404).json({message:'Match not found'});res.json(await matches.list(m.tournament_id))};
+export const start=async(req,res)=>res.json(await startMatch(req.params.id,req.user.id,req.app.get('io')));
+export const result=async(req,res)=>res.json(await submitResult(req.params.id,req.user.id,Number(req.body.score1),Number(req.body.score2),req.app.get('io')));
+export const confirm=async(req,res)=>res.json(await confirmResult(req.params.id,req.user.id,req.app.get('io')));
+export const dispute=async(req,res)=>res.status(201).json(await raiseDispute(req.params.id,req.user.id,req.body.reason,req.app.get('io')));
+export const resolve=async(req,res)=>{const x=await disputes.get(req.params.id);if(!x)return res.status(404).json({message:'Dispute not found'});const mem=await query('SELECT role FROM org_memberships WHERE user_id=$1 AND org_id=$2',[req.user.id,x.org_id]);if(mem.rows[0]?.role!=='REFEREE')return res.status(403).json({message:'Referee role required'});res.json(await resolveDispute(req.params.id,req.user.id,req.body.outcome,req.app.get('io')))};
+export const bracket=async(req,res)=>{const x=await access(req.params.id,req.user.id);res.json(await matches.list(x.m.tournament_id));};

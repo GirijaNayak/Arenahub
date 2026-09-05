@@ -1,0 +1,6 @@
+import {tournaments} from '../repositories/tournamentRepository.js';
+import {teams} from '../repositories/teamRepository.js';
+import {query} from '../config/db.js';
+export async function ensureTournamentAccess(tid,userId){const t=await tournaments.get(tid);if(!t)throw Object.assign(new Error('Tournament not found'),{status:404});const m=await query('SELECT role FROM org_memberships WHERE org_id=$1 AND user_id=$2',[t.org_id,userId]);if(!m.rows[0])throw Object.assign(new Error('You do not have access to this host'),{status:403});return {t,role:m.rows[0].role};}
+export async function createTournament(orgId,d){return tournaments.create([orgId,d.name,d.format||'SINGLE_ELIMINATION',d.maxTeams,d.startDate,d.rules||'']);}
+export async function registerTeam(tid,userId,name){const {t,role}=await ensureTournamentAccess(tid,userId);if(role!=='TEAM_CAPTAIN')throw Object.assign(new Error('Only Team Captains can register teams'),{status:403});if(t.status!=='REGISTRATION_OPEN')throw Object.assign(new Error('Registration is not open'),{status:400});const count=(await tournaments.teams(tid)).length;if(count>=t.max_teams)throw Object.assign(new Error('Tournament capacity has been reached'),{status:400});return teams.create(tid,userId,name);}

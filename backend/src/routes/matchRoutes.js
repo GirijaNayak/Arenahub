@@ -1,0 +1,2 @@
+import {Router} from 'express';import {authenticate} from '../middleware/auth.js';import {start,result,confirm,dispute,resolve,list} from '../controllers/matchController.js';
+const r=Router();r.get('/tournament/:id',authenticate,list);r.post('/:id/start',authenticate,start);r.post('/:id/result',authenticate,result);r.post('/:id/confirm',authenticate,confirm);r.post('/:id/dispute',authenticate,dispute);r.post('/disputes/:id/resolve',authenticate,resolve);export default r;

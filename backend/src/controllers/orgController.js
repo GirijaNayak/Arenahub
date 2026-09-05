@@ -1,0 +1,5 @@
+import {orgs} from '../repositories/orgRepository.js';import {users} from '../repositories/userRepository.js';
+export const listOrgs=async(req,res)=>{if(req.user.isAdmin){return res.json(await orgs.list())}res.json(await (await import('../repositories/userRepository.js')).users.memberships(req.user.id));};
+export const createOrg=async(req,res)=>{if(!req.body.name?.trim())return res.status(400).json({message:'Organization name is required'});res.status(201).json(await orgs.create(req.body.name.trim()))};
+export const addMember=async(req,res)=>{const u=await users.findByEmail(req.body.email);if(!u)return res.status(404).json({message:'User with that email was not found'});const roles=['PLAYER','TEAM_CAPTAIN','TOURNAMENT_ORGANIZER','REFEREE','SPECTATOR'];if(!roles.includes(req.body.role))return res.status(400).json({message:'Invalid organization role'});res.status(201).json(await orgs.addMember(req.params.id,u.id,req.body.role))};
+export const members=async(req,res)=>res.json(await orgs.members(req.params.id));
